@@ -51,7 +51,7 @@ main .carousel img {
 }
 
 main .inputSearch {
-  width: 300px;
+  max-width: 300px;
 }
 
 main .card {

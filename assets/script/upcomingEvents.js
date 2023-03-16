@@ -1,9 +1,5 @@
-console.log(data);
-let filtros = [];
-let search = "";
-
 // cards
-function crearCards() {
+function crearCards(data) {
   let container = document.querySelector(".cardsContainer");
   const currentDate = new Date(data.currentDate).getTime();
   container.replaceChildren();
@@ -32,62 +28,76 @@ function crearCards() {
   if (fragment1.childNodes.length === 0) {
     let message = document.createElement("h1");
     message.classList.add("w-100", "text-center");
-    message.innerText = "No hay eventos";
+    message.innerText = "No results";
     fragment1.appendChild(message);
   }
   container.appendChild(fragment1);
 }
 
-crearCards();
-
 // checkboxes
-let categorias = [];
-let arrayCategorias = data.events.map((evento) => {
-  if (!categorias.includes(evento.category)) categorias.push(evento.category);
-});
-
-let contenedorCategorias = document.querySelector(".filtros");
-let fragment2 = document.createDocumentFragment();
-for (let categoria of categorias) {
-  let div = document.createElement("div");
-  div.classList.add("form-check", "form-check-inline");
-  div.innerHTML = `
-  <label class="form-check-label" for="${categoria}"> ${categoria}
-       <input class="form-check-input" name="flexRadioDefault" type="checkbox" id="${categoria}">
-  </label>
-  `;
-  fragment2.appendChild(div);
+function crearCategorias(categorias) {
+  let contenedorCategorias = document.querySelector(".filtros");
+  let fragment2 = document.createDocumentFragment();
+  for (let categoria of categorias) {
+    let div = document.createElement("div");
+    div.classList.add("form-check", "form-check-inline");
+    div.innerHTML = `
+    <label class="form-check-label" for="${categoria}"> ${categoria}
+         <input class="form-check-input" name="flexRadioDefault" type="checkbox" id="${categoria}">
+    </label>
+    `;
+    fragment2.appendChild(div);
+  }
+  contenedorCategorias.appendChild(fragment2);
 }
-contenedorCategorias.appendChild(fragment2);
 
 // checkboxes addEventListener
 function verificarSeleccion() {
   let newFilter = [];
+  Array.from(checkboxes).forEach((checkbox) => checkbox);
   let inputsChequeados = Array.from(checkboxes).filter((checkbox) => checkbox.checked);
   inputsChequeados.forEach((e) => newFilter.push(e.id));
   filtros = newFilter;
-  crearCards();
+  crearCards(data2);
 }
-
-let checkboxes = document.querySelectorAll("input[type=checkbox]");
-checkboxes.forEach((checkbox) => {
-  checkbox.addEventListener("change", verificarSeleccion);
-});
 
 // search
 function handleChangeSearch(element) {
   search = element.value.trim().toLowerCase();
-  crearCards();
+  crearCards(data2);
 }
 
 function handleSubmit(e) {
   e.preventDefault();
   searchInput.value = "";
   search = "";
-  crearCards();
+  crearCards(data2);
 }
 
 let searchInput = document.querySelector("input[type=search]");
 let searchButton = document.querySelector("button[type=submit]");
 searchInput.addEventListener("input", () => handleChangeSearch(searchInput));
 searchButton.addEventListener("click", handleSubmit);
+
+let filtros = [];
+let categorias = [];
+let search = "";
+let data2 = [];
+let checkboxes = [];
+
+fetch("https://mindhub-xj03.onrender.com/api/amazing")
+  .then((resp) => resp.json())
+  .then((data) => {
+    data2 = data;
+    data.events.forEach((evento) => {
+      if (!categorias.includes(evento.category)) categorias = [...categorias, evento.category];
+    });
+    crearCards(data2);
+    crearCategorias(categorias);
+  })
+  .then(() => {
+    checkboxes = document.querySelectorAll("input[type=checkbox]");
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", verificarSeleccion);
+    });
+  });
